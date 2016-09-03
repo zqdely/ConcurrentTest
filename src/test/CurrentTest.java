@@ -49,7 +49,9 @@ public class CurrentTest {
 						// 获取许可
 						semp.acquire();
 						System.out.println("Thread:" + NO);
+						//配置访问地址
 						String host = "http://10.99.23.42:7001/KMQueryCenter/query.do?";
+						//设置访问参数
 						String para = "method=getQueryResult&pageNum=1&pageSize=5&"
 								+ "queryKeyWord="
 								+ getRandomSearchKey(NO)
