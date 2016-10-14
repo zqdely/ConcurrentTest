@@ -16,6 +16,7 @@ import java.util.concurrent.Semaphore;
  * 網上搜集的測試代碼，以備以後測試使用
  * @version 1.0
  */
+@SuppressWarnings("unchecked")
 public class CurrentTest {
 	private static int thread_num = 200;
 	private static int client_num = 460;
@@ -24,6 +25,7 @@ public class CurrentTest {
 		try {
 			InputStreamReader isr = new InputStreamReader(new FileInputStream(
 					new File("clicks.txt")), "GBK");
+			
 			BufferedReader buffer = new BufferedReader(isr);
 			String line = "";
 			while ((line = buffer.readLine()) != null) {
