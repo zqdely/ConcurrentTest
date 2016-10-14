@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-3.1.xsd"
+	default-autowire="byName"
+	>
+	<!-- 加载Hibernate配置 -->
+	<!-- <bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="configLocation">
+			<value>classpath:hibernate.cfg.xml</value>
+		</property>
+	</bean> -->
+	<bean id="config"
+		class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:jdbc.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 定义dbcp数据源   数据库连接池  -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" >
+		<!-- 指定JDBC驱动类 -->
+		<property name="driverClassName" value="${jdbc.driver}">
+		</property>
+		<!-- 提供连接数据库的URL地址 -->
+		<property name="url" value="${jdbc.url}">
+		</property>
+		<!-- 提供连接数据库的用户名和密码 -->
+		<property name="username" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+	<!-- jdbctemplate配置 -->
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate" >
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	
+	<!-- 配置mybitasSqlSessionFactoryBean -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:MyBatis-Configuration.xml"></property>
+	</bean>
+	<!-- 配置SqlSessionTemplate -->
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+	    <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	
+	
+	
+	
+	<!-- 定义SessionFactory Bean -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<!-- 为LocalSessionFactoryBean注入定义好的数据源 -->
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+		<!-- 添加Hibernate配置参数 -->
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">
+					org.hibernate.dialect.OracleDialect
+				</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+			</props>
+		</property>
+		<property name="mappingDirectoryLocations">
+			<list>
+				<value>classpath:cn/bdqn/jboa/entity/</value>
+			</list>
+		</property>
+	</bean>
+	<!-- 定义事务管理器 -->
+	<bean id="txManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="find*" read-only="true" />
+			<tx:method name="search*" read-only="true" />
+			<tx:method name="query*" read-only="true" />
+			<tx:method name="add*" propagation="REQUIRED" />
+			<tx:method name="del*" propagation="REQUIRED" />
+			<tx:method name="update*" propagation="REQUIRED" />
+			<tx:method name="do*" propagation="REQUIRED" />
+			<tx:method name="*" propagation="REQUIRED" read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+	<aop:config>
+		<!-- 定义切入点 -->
+		<aop:pointcut id="serviceMethod"
+			expression="execution(* cn.bdqn.jboa.service.*.*(..))" />
+		<!-- 将事务通知与切入点组合 -->
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="serviceMethod" />
+	</aop:config>
+	
+	<!-- dao -->
+	<bean id="employeeDao" class="cn.bdqn.jboa.dao.impl.EmployeeDaoImpl" ></bean>
+	<bean id="claimVoucherDao" class="cn.bdqn.jboa.dao.impl.ClaimVoucherDaoImpl" ></bean>
+	
+	<!-- service -->
+	<bean id="employeeService" class="cn.bdqn.jboa.service.impl.EmployeeServiceImpl"></bean>
+	<bean id="claimVoucherService" class="cn.bdqn.jboa.service.impl.ClaimVoucherServiceImpl"></bean>
+	<!-- action的所有bean -->
+	<bean id="employeeAction" class="cn.bdqn.jboa.action.EmployeeAction" scope="prototype"></bean> 
+	<bean id="claimVoucherAction" class="cn.bdqn.jboa.action.ClaimVoucherAction" scope="prototype" ></bean>
+</beans>
